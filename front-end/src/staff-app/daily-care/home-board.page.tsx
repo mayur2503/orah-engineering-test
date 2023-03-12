@@ -9,16 +9,45 @@ import { Person } from "shared/models/person"
 import { useApi } from "shared/hooks/use-api"
 import { StudentListTile } from "staff-app/components/student-list-tile/student-list-tile.component"
 import { ActiveRollOverlay, ActiveRollAction } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
+import StudentFilter, { Filter } from "staff-app/components/student-filter/student-filter"
+import StudentSearch from "staff-app/components/student-search/student-serach"
+import { byPropertiesOf } from "shared/helpers/sort-utils"
+import { useAppDispatch, useAppSelector } from "shared/hooks/redux-hooks"
+import { setStudents } from "features/students/studentSlice"
 
 export const HomeBoardPage: React.FC = () => {
   const [isRollMode, setIsRollMode] = useState(false)
   const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
+  const dispatch = useAppDispatch()
+  const { students, filter, search } = useAppSelector(state => state.student)
+  // const [students, setStudents] = useState<(Person & { attendance?: string })[]>([])
 
   useEffect(() => {
     void getStudents()
   }, [getStudents])
 
-  const onToolbarAction = (action: ToolbarAction) => {
+  useEffect(() => {
+    console.log('from redux', students)
+  }, [students])
+
+  useEffect(() => {
+    console.log('filter change', filter, search)
+    if (data?.students) {
+      let searchFilter = [...data?.students].filter((student) => student.first_name.includes(search) || student.last_name.includes(search))
+      let sortProperty: keyof Person | string = `${filter.order == 'asc' ? '' : '-'}${filter.name}`
+      let sortedStudents = [...searchFilter].sort(byPropertiesOf<Person>([sortProperty as keyof Person]))
+      dispatch(setStudents(sortedStudents))
+    }
+
+  }, [filter, search])
+
+  useEffect(() => {
+    if (data?.students) {
+      dispatch(setStudents(data.students))
+    }
+  }, [data?.students])
+
+  const onToolbarAction = (action: ToolbarAction, value: string | Filter | undefined) => {
     if (action === "roll") {
       setIsRollMode(true)
     }
@@ -43,7 +72,7 @@ export const HomeBoardPage: React.FC = () => {
 
         {loadState === "loaded" && data?.students && (
           <>
-            {data.students.map((s) => (
+            {students.map((s) => (
               <StudentListTile key={s.id} isRollMode={isRollMode} student={s} />
             ))}
           </>
@@ -60,17 +89,23 @@ export const HomeBoardPage: React.FC = () => {
   )
 }
 
-type ToolbarAction = "roll" | "sort"
+export type ToolbarAction = "roll" | "sort" | "search"
 interface ToolbarProps {
-  onItemClick: (action: ToolbarAction, value?: string) => void
+  onItemClick: (action: ToolbarAction, value?: string | Filter) => void
 }
 const Toolbar: React.FC<ToolbarProps> = (props) => {
   const { onItemClick } = props
   return (
     <S.ToolbarContainer>
-      <div onClick={() => onItemClick("sort")}>First Name</div>
-      <div>Search</div>
-      <S.Button onClick={() => onItemClick("roll")}>Start Roll</S.Button>
+      <S.ToolBarItem>
+        <StudentFilter />
+      </S.ToolBarItem>
+      <S.ToolBarItem>
+        <StudentSearch />
+      </S.ToolBarItem>
+      <S.ToolBarItem>
+        <S.Button onClick={() => onItemClick("roll")}>Start Roll</S.Button>
+      </S.ToolBarItem>
     </S.ToolbarContainer>
   )
 }
@@ -92,11 +127,15 @@ const S = {
     font-weight: ${FontWeight.strong};
     border-radius: ${BorderRadius.default};
   `,
+  ToolBarItem: styled.div`
+    flex-grow:1;
+  `,
   Button: styled(Button)`
     && {
       padding: ${Spacing.u2};
       font-weight: ${FontWeight.strong};
       border-radius: ${BorderRadius.default};
+      align-items:end
     }
   `,
 }
