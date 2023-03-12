@@ -13,7 +13,7 @@ import StudentFilter, { Filter } from "staff-app/components/student-filter/stude
 import StudentSearch from "staff-app/components/student-search/student-serach"
 import { byPropertiesOf } from "shared/helpers/sort-utils"
 import { useAppDispatch, useAppSelector } from "shared/hooks/redux-hooks"
-import { setFilteredStudents, setStudents, setTotalStudents } from "features/students/studentSlice"
+import { resetRollStates, setFilteredStudents, setStudents, setTotalStudents } from "features/students/studentSlice"
 import { RolllStateType } from "shared/models/roll"
 
 export const HomeBoardPage: React.FC = () => {
@@ -21,7 +21,6 @@ export const HomeBoardPage: React.FC = () => {
   const [getStudents, data, loadState] = useApi<{ students: (Person & { roll?: RolllStateType })[] }>({ url: "get-homeboard-students" })
   const dispatch = useAppDispatch()
   const { students, filter, search, roleFilter, filteredStudents } = useAppSelector(state => state.student)
-  // const [students, setStudents] = useState<(Person & { attendance?: string })[]>([])
 
   useEffect(() => {
     void getStudents()
@@ -31,24 +30,25 @@ export const HomeBoardPage: React.FC = () => {
   useEffect(() => {
     if (data?.students) {
       let searchFilter = students.filter((student) => student.first_name.includes(search) || student.last_name.includes(search))
-    let sortProperty: keyof Person | string = `${filter.order == 'asc' ? '' : '-'}${filter.name}`
-    let sortedStudents = [...searchFilter].sort(byPropertiesOf<Person>([sortProperty as keyof Person]))
-    let sortedWithRole = sortedStudents.filter((student) => {
-      if (roleFilter == 'all') {
-        return true
-      } else if (student.roll == roleFilter) {
-        return true
-      } else {
-        return false
-      }
-    })
-    dispatch(setFilteredStudents(sortedWithRole))
+      let sortProperty: keyof Person | string = `${filter.order == 'asc' ? '' : '-'}${filter.name}`
+      let sortedStudents = [...searchFilter].sort(byPropertiesOf<Person>([sortProperty as keyof Person]))
+      let sortedWithRole = sortedStudents.filter((student) => {
+        if (roleFilter == 'all') {
+          return true
+        } else if (student.roll == roleFilter) {
+          return true
+        } else {
+          return false
+        }
+      })
+      dispatch(setFilteredStudents(sortedWithRole))
     }
-   
-  }, [filter, search, roleFilter,students])
+
+  }, [filter, search, roleFilter, students])
 
   useEffect(() => {
     if (data?.students) {
+      dispatch(resetRollStates())
       dispatch(setStudents(data.students))
       dispatch(setTotalStudents(data.students.length))
     }

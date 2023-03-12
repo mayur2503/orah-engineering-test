@@ -5,6 +5,8 @@ import { BorderRadius, Spacing } from "shared/styles/styles"
 import { ItemType, RollStateList } from "staff-app/components/roll-state/roll-state-list.component"
 import { useAppDispatch, useAppSelector } from "shared/hooks/redux-hooks"
 import { setRoleFilter } from "features/students/studentSlice"
+import { useApi } from "shared/hooks/use-api"
+import { RollInput } from "shared/models/roll"
 
 
 export type ActiveRollAction = "filter" | "exit"
@@ -14,12 +16,27 @@ interface Props {
 }
 
 export const ActiveRollOverlay: React.FC<Props> = (props) => {
+  const [saveRoll, data, loadState] = useApi<{ success: boolean }>({ url: "save-roll" })
+
   const { isActive, onItemClick } = props
-  const { roleStates } = useAppSelector((state) => state.student)
+  const { roleStates, students } = useAppSelector((state) => state.student)
   const dispatch = useAppDispatch()
 
   const onRollClick = (type: ItemType) => {
     dispatch(setRoleFilter(type))
+  }
+
+  const completeRoll = () => {
+    let student_roll_states = []
+    student_roll_states = students.map((student) => {
+      let rollState = {
+        student_id: student.id,
+        roll_state: student.roll == undefined ? 'unmark' : student.roll
+      }
+      return rollState
+    })
+    saveRoll({ student_roll_states: student_roll_states })
+    onItemClick('exit')
   }
 
 
@@ -36,7 +53,7 @@ export const ActiveRollOverlay: React.FC<Props> = (props) => {
             <Button color="inherit" onClick={() => onItemClick("exit")}>
               Exit
             </Button>
-            <Button color="inherit" style={{ marginLeft: Spacing.u2 }} onClick={() => onItemClick("exit")}>
+            <Button color="inherit" style={{ marginLeft: Spacing.u2 }} onClick={() => completeRoll()}>
               Complete
             </Button>
           </div>

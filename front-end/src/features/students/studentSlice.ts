@@ -79,11 +79,19 @@ export const studentSlice = createSlice({
         setRoleFilter: (state, action: PayloadAction<ItemType>) => {
             state.roleFilter = action.payload
         },
-        setFilteredStudents:(state, action: PayloadAction<(Person & { roll?: RolllStateType })[]>) => {
-             state.filteredStudents = action.payload
+        setFilteredStudents: (state, action: PayloadAction<(Person & { roll?: RolllStateType })[]>) => {
+            state.filteredStudents = action.payload
+        },
+        resetRollStates: (state) => {
+            state.roleStates = [
+                { type: "all", count: 0 },
+                { type: "present", count: 0 },
+                { type: "late", count: 0 },
+                { type: "absent", count: 0 },
+            ]
         }
     },
 })
 
-export const { setStudents, setFilter, setSearch, setRole, setRollState, setTotalStudents, setRoleFilter,setFilteredStudents } = studentSlice.actions
+export const { setStudents, setFilter, setSearch, setRole, setRollState, setTotalStudents, setRoleFilter, setFilteredStudents ,resetRollStates} = studentSlice.actions
 export default studentSlice.reducer
