@@ -9,13 +9,11 @@ import { getBgColor } from "../roll-state/roll-state-icon.component"
 interface Props {
     roll: RolllStateType;
     entity: Roll;
-    toggleCollapsible: (roll: RolllStateType, prevActiveRoll: RolllStateType| '') => void
+    toggleCollapsible: (roll: RolllStateType, prevActiveRoll: RolllStateType | '') => void
     activeRoll: RolllStateType | ''
 }
 
 export const RollCountBox: React.FC<Props> = ({ roll, entity, toggleCollapsible, activeRoll }) => {
-    const dispatch = useAppDispatch()
-
     return (
         <S.Container textColor={getTextColor(roll)} borderColor={getBgColor(roll)} onClick={() => toggleCollapsible(roll, activeRoll)}>
             {roll.charAt(0).toUpperCase() + roll.slice(1)} {entity.student_roll_states.filter((item) => item.roll_state == roll).length}

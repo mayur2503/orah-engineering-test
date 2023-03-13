@@ -6,7 +6,6 @@ import { ItemType, RollStateList } from "staff-app/components/roll-state/roll-st
 import { useAppDispatch, useAppSelector } from "shared/hooks/redux-hooks"
 import { setRoleFilter } from "features/students/studentSlice"
 import { useApi } from "shared/hooks/use-api"
-import { RollInput } from "shared/models/roll"
 
 
 export type ActiveRollAction = "filter" | "exit"

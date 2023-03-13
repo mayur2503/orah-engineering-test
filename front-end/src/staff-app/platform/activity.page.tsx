@@ -1,36 +1,33 @@
-import React, { useState, useEffect } from "react"
+import React, {  useEffect,useCallback } from "react"
 import styled from "styled-components"
 import Button from "@material-ui/core/ButtonBase"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { Spacing, BorderRadius, FontWeight } from "shared/styles/styles"
 import { Colors } from "shared/styles/colors"
 import { CenteredContainer } from "shared/components/centered-container/centered-container.component"
-import { Person } from "shared/models/person"
+import { Person, PersonHelper } from "shared/models/person"
 import { useApi } from "shared/hooks/use-api"
-import { StudentListTile } from "staff-app/components/student-list-tile/student-list-tile.component"
-import { ActiveRollOverlay, ActiveRollAction } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
-import StudentFilter, { Filter } from "staff-app/components/student-filter/student-filter"
-import StudentSearch from "staff-app/components/student-search/student-serach"
-import { byPropertiesOf } from "shared/helpers/sort-utils"
-import { useAppDispatch, useAppSelector } from "shared/hooks/redux-hooks"
-import { resetRollStates, setFilteredStudents, setStudents, setTotalStudents } from "features/students/studentSlice"
 import { RolllStateType } from "shared/models/roll"
 import { Activity } from "shared/models/activity"
 import { ActivityListTile } from "staff-app/components/activity-list-tile/activity-list-tile.component"
 
 export const ActivityPage: React.FC = () => {
-  const [isRollMode, setIsRollMode] = useState(false)
   const [getActivities, data, loadState] = useApi<{ activity: Activity[] }>({ url: "get-activities" })
-  const dispatch = useAppDispatch()
-  useEffect(() => {
-    if (data?.activity) {
-      console.log(data.activity)
-    }
-  }, [data?.activity])
+  const [getStudents, studentsData] = useApi<{ students: (Person & { roll?: RolllStateType })[] }>({ url: "get-homeboard-students" })
 
   useEffect(() => {
     void getActivities()
   }, [getActivities])
+
+  useEffect(() => {
+    void getStudents()
+  }, [getStudents])
+
+  const getStudentName = useCallback((id: number) => {
+    let student = studentsData?.students.find((s) => s.id == id)
+    return PersonHelper.getFullName(student as Person)
+  }, [studentsData])
+
 
 
   return (
@@ -45,7 +42,7 @@ export const ActivityPage: React.FC = () => {
         {loadState === "loaded" && data?.activity && (
           <>
             {data.activity.map((a) => (
-              <ActivityListTile key={`${a.entity.name}-count`} activity={a} />
+              <ActivityListTile key={`${a.entity.name}-count`} activity={a} getStudentName={getStudentName} />
             ))}
           </>
         )}

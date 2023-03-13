@@ -54,9 +54,6 @@ export const HomeBoardPage: React.FC = () => {
     }
   }, [data?.students])
 
-  useEffect(() => {
-    console.log(roleFilter)
-  }, [roleFilter])
 
   const onToolbarAction = (action: ToolbarAction, value: string | Filter | undefined) => {
     if (action === "roll") {

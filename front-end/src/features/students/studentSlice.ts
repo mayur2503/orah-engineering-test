@@ -3,7 +3,6 @@ import { Person } from 'shared/models/person'
 import { RolllStateType } from 'shared/models/roll';
 import { ItemType, StateList } from 'staff-app/components/roll-state/roll-state-list.component';
 import { Filter } from 'staff-app/components/student-filter/student-filter';
-import type { RootState } from '../../store/store'
 
 interface StudentState {
     totalStudents: number
